@@ -29,14 +29,18 @@ int main(int argc, char *argv[])
 	CHECK(matFill(m));
 	
 	printf("Matrix\n");
-	matPrint(m);
+	CHECK(matPrint(m));
 
 	matDecomposeLU(m, l, u);
 
 	printf("Lower\n");
-	matPrint(l);
+	CHECK(matPrint(l));
 	printf("Upper\n");
-	matPrint(u);
+	CHECK(matPrint(u));
+
+	//matMultiply(l, u, m);
+//	printf("Identity:\n");
+//	matPrint(m);
 
 	printf("Freeing memory...\n");
 	matFree(m);

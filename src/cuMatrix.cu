@@ -6,7 +6,7 @@
 	x = blockIdx.x*blockDim.x + threadIdx.x; \
 	pos = y*width+x;
 
-__global__ void matDecomposeLU(float* src, float *l, float *u, unsigned int width)
+__global__ void _matDecomposeLU(float* src, float *l, float *u, unsigned int width)
 {
 	unsigned int i;
 	ESTABLISH_CURRENT_POSITION;
@@ -29,4 +29,10 @@ __global__ void matDecomposeLU(float* src, float *l, float *u, unsigned int widt
 	u[pos] = src[pos];
 	for(i=0; i<x; i++)
 		u[pos] -= src[y*width+i]*src[i*width+x];
+}
+
+__global__ void _matMultiply(float *a, float *b, float *dest, unsigned int width)
+{
+	ESTABLISH_CURRENT_POSITION;
+	dest[pos] = 1337.0;
 }

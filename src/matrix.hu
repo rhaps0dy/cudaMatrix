@@ -8,13 +8,14 @@ typedef struct
 	float *h;
 	float *d;
 	unsigned int w;
+	int touched;
 } Matrix ;
 
 //! Fill matrix with integer values from -128 to 127
 int matFill(Matrix *m);
 
 //! Print a matrix
-void matPrint(Matrix *m);
+int matPrint(Matrix *m);
 
 //! Allocate a matrix on host and device
 Matrix *matAlloc(unsigned int width);
@@ -25,21 +26,19 @@ void matFree(Matrix *m);
 //! LU Decomposition of a matrix
 int matDecomposeLU(Matrix *src, Matrix *l, Matrix *u);
 
-//! copy matrix information from host to device
-inline
-int _matCopyHtoD(Matrix *m)
+//! sync matrix information
+inline int _matCopy(Matrix *m, cudaMemcpyKind kind, float *a, float *b)
 {
-	CHECK_SUCCESS(cudaMemcpy(m->d, m->h, m->w * m->w *sizeof(float), cudaMemcpyHostToDevice));
+	if(m->touched)
+	{
+		CHECK_SUCCESS(cudaMemcpy(a, b, m->w * m->w *sizeof(float), kind));
+		m->touched = 0;
+	}
 	return 0;
 }
 
-//! copy matrix information from device to host
-inline
-int _matCopyDtoH(Matrix *m)
-{
-	CHECK_SUCCESS(cudaMemcpy(m->h, m->d, m->w * m->w *sizeof(float), cudaMemcpyDeviceToHost));
-	return 0;
-}
+inline int _matCopyHtoD(Matrix *m) { return _matCopy(m, cudaMemcpyHostToDevice, m->d, m->h); }
+inline int _matCopyDtoH(Matrix *m) { return _matCopy(m, cudaMemcpyDeviceToHost, m->h, m->d); }
 
 
 #endif //_matrix_hu_

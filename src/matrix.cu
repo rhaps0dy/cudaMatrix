@@ -25,10 +25,10 @@ int matFill(Matrix *m)
 	return 0;
 } 
 
-void matPrint(Matrix *m)
+int matPrint(Matrix *m)
 {
 	unsigned int x, y;
-	const unsigned int MAX_SANE_WIDTH = 8;
+	const unsigned int MAX_SANE_WIDTH = 6;
 	char answer;
 
 	printf("\n");
@@ -39,12 +39,14 @@ void matPrint(Matrix *m)
 		{
 			scanf("%c", &answer);
 			if(answer=='n')
-				return;
+				return 0;
 			if(answer=='y')
 				break;
 			printf("Could not understand input. Please type 'y' or 'n'. ");
 		} 
 	}
+
+	CHECK(_matCopyDtoH(m))
 
 	for(y=0; y < m->w; y++)
 	{
@@ -53,6 +55,7 @@ void matPrint(Matrix *m)
 		printf("\n");
 	}
 	printf("\n");
+	return 0;
 }
 
 Matrix *matAlloc(unsigned int width)
@@ -68,6 +71,7 @@ Matrix *matAlloc(unsigned int width)
 	}
 
 	m->w = width;
+	m->touched = 0;
 
 	if(cudaMalloc((void **)&m->d, size)!=cudaSuccess)
 	{
@@ -102,9 +106,30 @@ int matDecomposeLU(Matrix *src, Matrix *l, Matrix *u)
 		SPIT("Matrices must be of the same size\n");
 		return -1;
 	}
-	//temporary
-	CHECK(matFill(l));
-	CHECK(matFill(u));
+
+	dim3 dimGrid(1, 1);
+	dim3 dimBlock(src->w, src->w);
+
+	_matDecomposeLU<<<dimGrid, dimBlock>>>(src->d, l->d, u->d, src->w);
+
+	l->touched = 1;
+	u->touched = 1;
 	return 0;
 }
 
+int matMultiply(Matrix *a, Matrix *b, Matrix *dest)
+{
+	if(dest->w != a->w || a->w != b->w)
+	{
+		SPIT("Matrices must be of the same size\n");
+		return -1;
+	}
+
+	dim3 dimGrid(1, 1);
+	dim3 dimBlock(dest->w, dest->w);
+
+	_matMultiply<<<dimGrid, dimBlock>>>(a->d, b->d, dest->d, dest->w);
+
+	dest->touched = 1;
+	return 0;
+}
