@@ -15,6 +15,10 @@
 #define ASSERT(X) CHECK(!X)
 
 #define CHECK_SUCCESS(X) \
-	ASSERT(X == cudaSuccess)
+	if(X != cudaSuccess) \
+	{ \
+		SPIT("Error: %s\n", cudaGetErrorString(cudaGetLastError())); \
+		return -1; \
+	}
 
 #endif // _errorMacros_hu_
