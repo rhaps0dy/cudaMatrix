@@ -15,6 +15,6 @@
 #define ASSERT(X) CHECK(!X)
 
 #define CHECK_SUCCESS(X) \
-	CHECK(X == cudaSuccess)
+	ASSERT(X == cudaSuccess)
 
 #endif // _errorMacros_hu_

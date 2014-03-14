@@ -69,11 +69,11 @@ Matrix *matAlloc(unsigned int width)
 
 	m->w = width;
 
-	if(cudaMalloc((void **)m->d, size)!=cudaSuccess)
+	if(cudaMalloc((void **)&m->d, size)!=cudaSuccess)
 	{
 		SPIT("Failed to allocate device array\n");
-//		free(m);
-//		return NULL;
+		free(m);
+		return NULL;
 	}
 
 	m->h = (float *) malloc(size);
