@@ -51,7 +51,7 @@ int matPrint(Matrix *m)
 	for(y=0; y < m->w; y++)
 	{
 		for(x=0; x < m->w; x++)
-			printf("%f\t", m->h[y*m->w+x]);
+			printf("%f ", m->h[y*m->w+x]);
 		printf("\n");
 	}
 	printf("\n");
@@ -99,6 +99,43 @@ void matFree(Matrix *m)
 	free(m);
 }
 
+void __matDecomposeLU(float* src, float *l, float *u, unsigned int width)
+{
+	unsigned int i,j,p;
+	for(i=0; i<width; i++)
+	{
+		for(j=0; j<i; j++)
+		{
+			float a = src[i*width+j];
+			for(p=0; p<j; p++)
+				a = a-src[i*width+p]*src[p*width+j];
+			src[i*width+j] = a/src[j*width+j];
+		}
+		for(j=i; j<width; j++)
+		{
+			float a = src[i*width+j];
+			for(p=0; p<i; p++)
+				a = a-src[i*width+p]*src[p*width+j];
+			src[i*width+j] = a;
+		}
+	}
+
+	for(i=0; i<width; i++)
+		for(j=0; j<width; j++)
+		{
+			if(j<i)
+			{
+				l[i*width+j] = src[i*width+j];
+				u[i*width+j] = 0;
+				continue;
+			}
+			if(i==j)
+				l[i*width+j] = 1;
+			else l[i*width+j] = 0;
+				u[i*width+j] = src[i*width+j];
+		}
+}
+
 int matDecomposeLU(Matrix *src, Matrix *l, Matrix *u)
 {
 	if(src->w != l->w || l->w != u->w)
@@ -107,13 +144,17 @@ int matDecomposeLU(Matrix *src, Matrix *l, Matrix *u)
 		return -1;
 	}
 
-	dim3 dimGrid(1, 1);
-	dim3 dimBlock(src->w, src->w);
+	//dim3 dimGrid(1, 1);
+	//dim3 dimBlock(src->w, src->w);
 
-	_matDecomposeLU<<<dimGrid, dimBlock>>>(src->d, l->d, u->d, src->w);
+	//_matDecomposeLU<<<dimGrid, dimBlock>>>(src->d, l->d, u->d, src->w);
+	__matDecomposeLU(src->h, l->h, u->h, src->w);
 
-	l->touched = 1;
-	u->touched = 1;
+	_matCopyHtoD(l);
+	_matCopyHtoD(u);
+
+	l->touched = 0;
+	u->touched = 0;
 	return 0;
 }
 

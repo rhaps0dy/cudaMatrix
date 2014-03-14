@@ -26,19 +26,26 @@ void matFree(Matrix *m);
 //! LU Decomposition of a matrix
 int matDecomposeLU(Matrix *src, Matrix *l, Matrix *u);
 
-//! sync matrix information
-inline int _matCopy(Matrix *m, cudaMemcpyKind kind, float *a, float *b)
+//! Multiplication of two matrices
+int matMultiply(Matrix *a, Matrix *b, Matrix *dest);
+
+//! Copy matrix from host to device
+inline int _matCopyHtoD(Matrix *m)
+{
+	CHECK_SUCCESS(cudaMemcpy(m->d, m->h, m->w * m->w *sizeof(float), cudaMemcpyHostToDevice));
+	m->touched = 0;
+	return 0;
+}
+//! Copy matrix from host to device
+inline int _matCopyDtoH(Matrix *m)
 {
 	if(m->touched)
 	{
-		CHECK_SUCCESS(cudaMemcpy(a, b, m->w * m->w *sizeof(float), kind));
+		CHECK_SUCCESS(cudaMemcpy(m->h, m->d, m->w * m->w *sizeof(float), cudaMemcpyDeviceToHost));
 		m->touched = 0;
 	}
 	return 0;
 }
-
-inline int _matCopyHtoD(Matrix *m) { return _matCopy(m, cudaMemcpyHostToDevice, m->d, m->h); }
-inline int _matCopyDtoH(Matrix *m) { return _matCopy(m, cudaMemcpyDeviceToHost, m->h, m->d); }
 
 
 #endif //_matrix_hu_

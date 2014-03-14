@@ -33,6 +33,10 @@ __global__ void _matDecomposeLU(float* src, float *l, float *u, unsigned int wid
 
 __global__ void _matMultiply(float *a, float *b, float *dest, unsigned int width)
 {
+	unsigned int i;
 	ESTABLISH_CURRENT_POSITION;
-	dest[pos] = 1337.0;
+
+	dest[pos] = a[y*width] * b[x];
+	for(i=1; i<width; i++)
+		dest[pos] += a[y*width+i]*b[i*width+x];
 }

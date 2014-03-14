@@ -38,9 +38,9 @@ int main(int argc, char *argv[])
 	printf("Upper\n");
 	CHECK(matPrint(u));
 
-	//matMultiply(l, u, m);
-//	printf("Identity:\n");
-//	matPrint(m);
+	matMultiply(l, u, m);
+	printf("Original matrix check:\n");
+	matPrint(m);
 
 	printf("Freeing memory...\n");
 	matFree(m);
