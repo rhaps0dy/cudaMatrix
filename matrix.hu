@@ -1,0 +1,45 @@
+#ifndef _matrix_hu_
+#define _matrix_hu_
+
+#include "errorMacros.hu"
+
+typedef struct
+{
+	float *h;
+	float *d;
+	unsigned int w;
+} Matrix ;
+
+//! Fill matrix with integer values from -128 to 127
+int matFill(Matrix *m);
+
+//! Print a matrix
+void matPrint(Matrix *m);
+
+//! Allocate a matrix on host and device
+Matrix *matAlloc(unsigned int width);
+
+//! Free a matrix from host and device
+void matFree(Matrix *m);
+
+//! LU Decomposition of a matrix
+int matDecomposeLU(Matrix *src, Matrix *l, Matrix *u);
+
+//! copy matrix information from host to device
+inline
+int _matCopyHtoD(Matrix *m)
+{
+	CHECK_SUCCESS(cudaMemcpy(m->d, m->h, m->w * m->w *sizeof(float), cudaMemcpyHostToDevice));
+	return 0;
+}
+
+//! copy matrix information from device to host
+inline
+int _matCopyDtoH(Matrix *m)
+{
+	CHECK_SUCCESS(cudaMemcpy(m->h, m->d, m->w * m->w *sizeof(float), cudaMemcpyDeviceToHost));
+	return 0;
+}
+
+
+#endif //_matrix_hu_

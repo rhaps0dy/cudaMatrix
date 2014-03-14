@@ -1,0 +1,20 @@
+#ifndef _errorMacros_hu_
+#define _errorMacros_hu_
+
+#include <stdio.h>
+
+#define SPIT(...) fprintf(stderr, ##__VA_ARGS__)
+
+#define CHECK(X) \
+	if(X) \
+	{ \
+		SPIT("Error: condition %s not met at %s:%d\n", #X, __FILE__, __LINE__); \
+		return -1; \
+	}
+
+#define ASSERT(X) CHECK(!X)
+
+#define CHECK_SUCCESS(X) \
+	CHECK(X == cudaSuccess)
+
+#endif // _errorMacros_hu_
