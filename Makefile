@@ -2,7 +2,7 @@ default: all
 .PHONY: default
 	
 all:
-	nvcc -o inverse_nxn main.cu prevChecks.cu matrix.cu
+	nvcc -o inverse_nxn src/main.cu src/prevChecks.cu src/matrix.cu src/cuMatrix.cu
 .PHONY: all
 
 clean:
