@@ -12,8 +12,8 @@ int main(int argc, char *argv[])
 	unsigned int width;
 
 	//some preliminary checks
-	CHECK(checkCLIArguments(argc, argv, &width));
-	CHECK(checkCUDAPresent());
+	checkCLIArguments(argc, argv, &width);
+	checkCUDAPresent();
 
 	printf("Matrix width and height: %u\n", width);
 

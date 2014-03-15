@@ -2,9 +2,9 @@
 #define _prevChecks_hu_
 
 //! This function checks sanity of command line arguments
-int checkCLIArguments(int argc, char *argv[], unsigned int *width);
+void checkCLIArguments(int argc, char *argv[], unsigned int *width);
 
 //! This function checks that system has a CUDA device available
-int checkCUDAPresent(void);
+void checkCUDAPresent(void);
 
 #endif //_prevChecks_hu_
