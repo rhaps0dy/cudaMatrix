@@ -6,52 +6,18 @@
 	x = blockIdx.x*blockDim.x + threadIdx.x; \
 	pos = y*width+x;
 
-void __matDecomposeLU(float* src, unsigned int width)
+__global__ void _prepareLeftColLU(float *m, unsigned int width)
 {
-	unsigned int i,j,p;
-	for(i=0; i<width; i++)
-	{
-		for(j=0; j<i; j++)
-		{
-			float a = src[i*width+j];
-			for(p=0; p<j; p++)
-				a = a-src[i*width+p]*src[p*width+j];
-			src[i*width+j] = a/src[j*width+j];
-		}
-		for(j=i; j<width; j++)
-		{
-			float a = src[i*width+j];
-			for(p=0; p<i; p++)
-				a = a-src[i*width+p]*src[p*width+j];
-			src[i*width+j] = a;
-		}
-	}
-}/*
+	unsigned int pos = width*(blockIdx.y*blockDim.y + threadIdx.y+1); 
+	m[pos] /= m[0];
+}
 
-__global__ void _matDecomposeLU(float* src, float *l, float *u, unsigned int width)
+__global__ void _makeLURow(float *m, unsigned int y, unsigned int initPos, unsigned int width)
 {
-	unsigned int i;
-	ESTABLISH_CURRENT_POSITION;
-
-	if(x<y) //we are in the L part
-	{
-		u[pos] = 0.;
-		l[pos] = src[pos];
-		for(i=0; i<x; i++)
-			l[pos] -= src[y*width+i]*src[i*width+x];
-		l[pos] /= src[x*width+x];
-		return;
-	}
-
-	//we are in the U part
-	if(x==y)
-		l[pos] = 1.;
-	else l[pos] = 0.;
-
-	u[pos] = src[pos];
-	for(i=0; i<x; i++)
-		u[pos] -= src[y*width+i]*src[i*width+x];
-}*/
+	unsigned int i, x = blockIdx.x*blockDim.x + threadIdx.x; 
+	for(i=0; i<y; i++)
+		m[initPos+x] -= m[y*width+i]*m[i*width+x+y];
+}
 
 __global__ void _matMultiply(float *dest, float *a, float *b, unsigned int width)
 {

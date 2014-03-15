@@ -21,11 +21,8 @@ private:
 	//! Copy matrix from host to device
 	inline void copyDtoH()
 	{
-		if(touched)
-		{
-			CHECK_SUCCESS(cudaMemcpy(h, d, w*w*sizeof(float), cudaMemcpyDeviceToHost));
-			touched = 0;
-		}
+		CHECK_SUCCESS(cudaMemcpy(h, d, w*w*sizeof(float), cudaMemcpyDeviceToHost));
+		touched = 0;
 	}
 
 public:

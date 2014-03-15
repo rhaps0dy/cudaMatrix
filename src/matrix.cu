@@ -45,7 +45,8 @@ void Matrix::print()
 		} 
 	}
 
-	copyDtoH();
+	if(hasBeenTouched())
+		copyDtoH();
 
 	if(!isLU())
 	{
@@ -122,13 +123,36 @@ Matrix::~Matrix()
 
 void Matrix::decomposeLU()
 {
-	//dim3 dimGrid(1, 1);
-	//dim3 dimBlock(src->w, src->w);
+	// doolittle algorithm
+	unsigned int x, y, p;
+	dim3 dimGrid(1, 1);
+	dim3 dimBlock(1, w-1);
+	_prepareLeftColLU<<<dimGrid, dimBlock>>>(d, w);
+	copyDtoH();
 
-	//_matDecomposeLU<<<dimGrid, dimBlock>>>(src->d, l->d, u->d, src->w);
-	__matDecomposeLU(h, w);
+	dimBlock = dim3(w-1, 1);
+	_makeLURow<<<dimGrid, dimBlock>>>(d, 1, w+1, w);
+	//copy recent changes to host
+	CHECK_SUCCESS(cudaMemcpy(&h[w+1], &d[w+1], (w-1)*sizeof(float), cudaMemcpyDeviceToHost)); 
+
+	for(y=2; y<w; y++)
+	{
+		for(x=1; x<y; x++)
+		{
+			for(p=0; p<x; p++)
+				h[y*w+x] -= h[y*w+p]*h[p*w+x];
+			h[y*w+x] /= h[x*w+x];
+		}
+		//copy recent changes to device
+		CHECK_SUCCESS(cudaMemcpy(&d[y*w+1], &h[y*w+1], (y-1)*sizeof(float), cudaMemcpyHostToDevice)); 
+
+		dimBlock = dim3(w-y, 1);
+		_makeLURow<<<dimGrid, dimBlock>>>(d, y, y*w+y, w);
+		//copy recent changes to host
+		CHECK_SUCCESS(cudaMemcpy(&h[y*w+y], &d[y*w+y], (w-y)*sizeof(float), cudaMemcpyDeviceToHost)); 
+	}
+
 	setLU(true);
-	copyHtoD();
 }
 
 void Matrix::multiply(Matrix *a, Matrix *b)
