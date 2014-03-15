@@ -54,6 +54,9 @@ public:
 	//! Multiply two matrices and store them in this one
 	void multiply(Matrix *a, Matrix *b);
 
+	//! Are the matrices different
+	bool isDifferent(Matrix *m);
+
 	//! All the get/setters!
 	inline float *getH() { return h; };
 	inline float *getD() { return d; };

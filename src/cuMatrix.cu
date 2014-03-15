@@ -81,3 +81,12 @@ __global__ void _matComposeLU(float *dest, float *lu, unsigned int width)
 	for(i=0; i<maxi; i++)
 		dest[pos] += lu[y*width+i]*lu[i*width+x];
 }
+
+__global__ void _matDifferent(float *a, float *b, unsigned int width, const float tolerance, bool *result)
+{
+	ESTABLISH_CURRENT_POSITION;
+	float diff = a[pos]-b[pos];
+
+	if(diff < -tolerance || diff > tolerance)
+		*result = true;
+}

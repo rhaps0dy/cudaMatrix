@@ -36,6 +36,11 @@ int main(int argc, char *argv[])
 	printf("Original matrix check:\n");
 	lu->print();
 
+	if(m->isDifferent(lu))
+		printf("Matrices DIFFER\n");
+	else
+		printf("Matrices don't differ, all is correct!\n");
+
 	printf("Freeing memory...\n");
 	delete lu;
 	delete m;

@@ -161,3 +161,19 @@ void Matrix::composeLU()
 	
 	touch();
 }
+
+bool Matrix::isDifferent(Matrix *m)
+{
+	bool result, *dev_result;
+
+	dim3 dimGrid(1, 1);
+	dim3 dimBlock(w, w);
+
+	CHECK_SUCCESS(cudaMalloc((void **)&dev_result, sizeof(bool)));
+	result = false;
+	CHECK_SUCCESS(cudaMemcpy(dev_result, &result, sizeof(bool), cudaMemcpyHostToDevice));
+	_matDifferent<<<dimGrid, dimBlock>>>(d, m->getD(), w, 0.001, dev_result);
+	CHECK_SUCCESS(cudaMemcpy(&result, dev_result, sizeof(bool), cudaMemcpyDeviceToHost));
+	cudaFree(dev_result);
+	return result;
+}

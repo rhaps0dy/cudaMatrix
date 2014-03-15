@@ -4,8 +4,11 @@
 #include <stdio.h>
 #include "Error.hxx"
 
-#define SPIT(...) fprintf(stderr, ##__VA_ARGS__);
-//	throw Error(); \
+#define SPIT(...) \
+{ \
+	fprintf(stderr, ##__VA_ARGS__); \
+	throw Error(); \
+}
 
 #define CHECK(X) \
 	if(X) \
@@ -15,6 +18,6 @@
 
 #define CHECK_SUCCESS(X) \
 	if(X != cudaSuccess) \
-		SPIT("Error: %s\n", cudaGetErrorString(cudaGetLastError())); \
+		SPIT("Error: %s at %s:%d\n", cudaGetErrorString(cudaGetLastError()), __FILE__, __LINE__); \
 
 #endif // _errorMacros_hu_
