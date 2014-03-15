@@ -1,12 +1,15 @@
 #ifndef _cuMatrix_hu_
 #define _cuMatrix_hu_
 
-__global__ void _matMultiply(float *a, float *b, float *dest, unsigned int width);
+__global__ void _matMultiply(float *dest, float *a, float *b, unsigned int width);
+__global__ void _matComposeLU(float *dest, float *lu, unsigned int width);
+__global__ void _matDifferent(float *a, float *b, unsigned int width, bool *result);
 //__global__ void matDivide(float *m, float value, width);
 //__global__ void matTranspose(int *trans, int *m, int width)
 //__global__ void matAdjunct(float *adj, int *m, int width)
-__global__ void _matDecomposeLU(float* src, float *l, float *u, unsigned int width);
+//__global__ void _matDecomposeLU(float* src, float *l, float *u, unsigned int width);
 
+void __matDecomposeLU(float* src, unsigned int width);
 
 
 #endif //_cuMatrix_hu_

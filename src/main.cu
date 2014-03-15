@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[])
 {
-	Matrix *m, *l, *u;
+	Matrix *m, *lu;
 	unsigned int width;
 
 	//some preliminary checks
@@ -18,33 +18,26 @@ int main(int argc, char *argv[])
 	printf("Matrix width and height: %u\n", width);
 
 	printf("Allocating memory...\n");
-	m = matAlloc(width);
-	ASSERT(m);
-	l = matAlloc(width);
-	ASSERT(l);
-	u = matAlloc(width);
-	ASSERT(u);
+	m = new Matrix(width);
 
 	printf("Filling matrix with random numbers...\n");
-	CHECK(matFill(m));
+	m->fill();
 	
 	printf("Matrix\n");
-	CHECK(matPrint(m));
+	m->print();
 
-	matDecomposeLU(m, l, u);
+	lu = m->copy();
+	lu->decomposeLU();
 
-	printf("Lower\n");
-	CHECK(matPrint(l));
-	printf("Upper\n");
-	CHECK(matPrint(u));
+	printf("LU Matrix:\n");
+	lu->print();
 
-	matMultiply(l, u, m);
+	lu->composeLU();
 	printf("Original matrix check:\n");
-	matPrint(m);
+	lu->print();
 
 	printf("Freeing memory...\n");
-	matFree(m);
-	matFree(l);
-	matFree(u);
+	delete lu;
+	delete m;
 	return 0;
 }

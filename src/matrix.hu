@@ -3,49 +3,67 @@
 
 #include "errorMacros.hu"
 
-typedef struct
+class Matrix
 {
+private:
 	float *h;
 	float *d;
 	unsigned int w;
-	int touched;
-} Matrix ;
+	bool touched;
+	bool _isLU;
 
-//! Fill matrix with integer values from -128 to 127
-int matFill(Matrix *m);
-
-//! Print a matrix
-int matPrint(Matrix *m);
-
-//! Allocate a matrix on host and device
-Matrix *matAlloc(unsigned int width);
-
-//! Free a matrix from host and device
-void matFree(Matrix *m);
-
-//! LU Decomposition of a matrix
-int matDecomposeLU(Matrix *src, Matrix *l, Matrix *u);
-
-//! Multiplication of two matrices
-int matMultiply(Matrix *a, Matrix *b, Matrix *dest);
-
-//! Copy matrix from host to device
-inline int _matCopyHtoD(Matrix *m)
-{
-	CHECK_SUCCESS(cudaMemcpy(m->d, m->h, m->w * m->w *sizeof(float), cudaMemcpyHostToDevice));
-	m->touched = 0;
-	return 0;
-}
-//! Copy matrix from host to device
-inline int _matCopyDtoH(Matrix *m)
-{
-	if(m->touched)
+	//! Copy matrix from host to device
+	inline void copyHtoD()
 	{
-		CHECK_SUCCESS(cudaMemcpy(m->h, m->d, m->w * m->w *sizeof(float), cudaMemcpyDeviceToHost));
-		m->touched = 0;
+		CHECK_SUCCESS(cudaMemcpy(d, h, w*w*sizeof(float), cudaMemcpyHostToDevice));
+		touched = 0;
 	}
-	return 0;
-}
+	//! Copy matrix from host to device
+	inline void copyDtoH()
+	{
+		if(touched)
+		{
+			CHECK_SUCCESS(cudaMemcpy(h, d, w*w*sizeof(float), cudaMemcpyDeviceToHost));
+			touched = 0;
+		}
+	}
+
+public:
+	static const unsigned int MAX_SANE_WIDTH = 6;
+
+	//! Allocate a matrix on host and device
+	Matrix(unsigned int width);
+	//! Free a matrix from host and device
+	~Matrix();
+
+	//! Fill matrix with integer values from -128 to 127
+	void fill();
+
+	//! Print a matrix
+	void print();
+
+	//! Copy the matrix
+	Matrix *copy();
+
+	//! LU Decomposition of a matrix
+	void decomposeLU();
+
+	//! Rebuild the original matrix from an LU
+	void composeLU();
+
+	//! Multiply two matrices and store them in this one
+	void multiply(Matrix *a, Matrix *b);
+
+	//! All the get/setters!
+	inline float *getH() { return h; };
+	inline float *getD() { return d; };
+	inline unsigned int getW() { return w; }
+	inline bool hasBeenTouched(){ return touched; }
+	inline void touch(){ touched = true; }
+	inline bool isLU() { return _isLU; }
+	inline void setLU(bool a) { _isLU = a; }
+};
+
 
 
 #endif //_matrix_hu_
