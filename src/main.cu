@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[])
 {
-	Matrix *m, *lu;
+	Matrix *m, *lu, *inv;
 	unsigned int width;
 
 	//some preliminary checks
@@ -32,6 +32,8 @@ int main(int argc, char *argv[])
 	printf("LU Matrix:\n");
 	lu->print();
 
+	inv = lu->copy();
+
 	lu->composeLU();
 	printf("Original matrix check:\n");
 	lu->print();
@@ -41,8 +43,17 @@ int main(int argc, char *argv[])
 	else
 		printf("Matrices don't differ, all is correct!\n");
 
+	inv->invertLU();
+	printf("Inverted LU\n");
+	inv->print();
+	inv->composeLU();
+	printf("Original matrix check:\n");
+	lu->multiply(m, inv);
+	lu->print();
+
 	printf("Freeing memory...\n");
 	delete lu;
 	delete m;
+	delete inv;
 	return 0;
 }

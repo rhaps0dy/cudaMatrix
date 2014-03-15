@@ -201,3 +201,60 @@ bool Matrix::isDifferent(Matrix *m)
 	cudaFree(dev_result);
 	return result;
 }
+
+void Matrix::invertLU()
+{
+	unsigned int i,y,x, min, width = w;
+	float *dest, *m = (float *) malloc(w*w*sizeof(float));
+	memcpy((void *)m, (const void *)h, w*w*sizeof(float));
+	dest = h;
+	/*CHECK_SUCCESS(cudaMalloc((void **)&m, w*w*sizeof(float)));
+	for(i=0; i<w; i++)
+	{
+		min = (w-i < i+1 ? w-i : i+1);
+		dim3 dimGrid(1, 1);
+		dim3 dimBlock(min, min);
+		_doInversionStepUpper<<<dimGrid, dimBlock>>>(m, d, w, i);
+		_doInversionStepLower<<<dimGrid, dimBlock>>>(m, d, w, i);
+	}
+	CHECK_SUCCESS(cudaMemcpy(d, m, w*w*sizeof(float), cudaMemcpyDeviceToDevice));
+	copyDtoH();
+	cudaFree(m);*/
+	copyDtoH();
+	
+	for(i=0; i<w; i++)
+	{
+		min = (w-i < i+1 ? w-i : i+1);
+		for(unsigned int j=0; j<min; j++)
+		{
+			y = -j;
+			for(x=0; x<min; x++)
+			{
+				
+
+	if(y==0)
+	{
+		if(x==0)
+		{
+			printf("i = %u\n", i);
+			dest[i*width+i] = 1/m[i*width+i];
+		}
+		else {
+		dest[i*width+i+x] = m[i*width+i+x]*m[i*width+i];
+		}
+	}
+
+	else if(x==0)
+	{
+		dest[(i+y)*width+i] = -(m[(i+y)*width+i]*m[i*width+i]);
+	}
+	else
+	dest[(i+y)*width+x+i] = m[(i+y)*width+x+i] + m[(i+y)*width+i] * m[i*width+i+x];
+
+
+			}
+		}
+	}
+	copyHtoD();
+	free(m);
+}

@@ -6,6 +6,55 @@
 	x = blockIdx.x*blockDim.x + threadIdx.x; \
 	pos = y*width+x;
 
+__global__ void _doInversionStepUpper(float *dest, float *m, unsigned int width, unsigned int i)
+{
+	//no need to calculate pos
+	unsigned int y, x;
+	y = -blockIdx.y*blockDim.y - threadIdx.y;
+	x = blockIdx.x*blockDim.x + threadIdx.x;
+
+	if(y==0)
+	{
+		if(x==0)
+		{
+			dest[i*width+i] = 1/m[i*width+i];
+			return;
+		}
+		dest[i*width+i+x] = m[i*width+i+x]*m[i*width+i];
+		return;
+	}
+
+	if(x==0)
+	{
+		dest[(i+y)*width+i] = -(m[(i+y)*width+i]*m[i*width+i]);
+		return;
+	}
+	dest[(i+y)*width+x+i] = m[(i+y)*width+x+i] + m[(i+y)*width+i] * m[i*width+i+x];
+}
+
+__global__ void _doInversionStepLower(float *dest, float *m, unsigned int width, unsigned int i)
+{
+	unsigned int y, x;
+	y = blockIdx.y*blockDim.y + threadIdx.y;
+	x = -blockIdx.x*blockDim.x - threadIdx.x;
+
+	if(y==0)
+	{
+		if(x==0)
+			return;
+		
+		dest[i*width+i+x] = m[i*width+i+x];
+		return;
+	}
+
+	if(x==0)
+	{
+		dest[(i+y)*width+i] = -m[(i+y)*width+i];
+		return;
+	}
+	dest[(i+y)*width+x+i] = m[(i+y)*width+x+i] + m[(i+y)*width+i] * m[i*width+i+x];
+}
+
 __global__ void _prepareLeftColLU(float *m, unsigned int width)
 {
 	unsigned int pos = width*(blockIdx.y*blockDim.y + threadIdx.y+1); 

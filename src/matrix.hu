@@ -54,6 +54,9 @@ public:
 	//! Are the matrices different
 	bool isDifferent(Matrix *m);
 
+	//! Invert
+	void invertLU();
+
 	//! All the get/setters!
 	inline float *getH() { return h; };
 	inline float *getD() { return d; };

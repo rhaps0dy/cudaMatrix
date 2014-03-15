@@ -11,4 +11,6 @@ __global__ void _matDifferent(float *a, float *b, unsigned int width, const floa
 __global__ void _makeLURow(float *m, unsigned int y, unsigned int initPos, unsigned int width);
 __global__ void _prepareLeftColLU(float *m, unsigned int width);
 
+__global__ void _doInversionStepUpper(float *dest, float *m, unsigned int width, unsigned int i);
+__global__ void _doInversionStepLower(float *dest, float *m, unsigned int width, unsigned int i);
 #endif //_cuMatrix_hu_
