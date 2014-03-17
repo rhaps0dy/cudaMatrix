@@ -26,28 +26,18 @@ int main(int argc, char *argv[])
 	printf("Matrix\n");
 	m->print();
 
+	printf("Decomposing in LU...\n");
 	lu = m->copy();
 	lu->decomposeLU();
-
-	printf("LU Matrix:\n");
 	lu->print();
-
 	inv = lu->copy();
-
-	lu->composeLU();
-	printf("Original matrix check:\n");
-	lu->print();
-
-	if(m->isDifferent(lu))
-		printf("Matrices DIFFER\n");
-	else
-		printf("Matrices don't differ, all is correct!\n");
-
+	printf("Inverting the LU...\n");
 	inv->invertLU();
-	printf("Inverted LU\n");
 	inv->print();
-	inv->composeLU();
-	printf("Original matrix check:\n");
+	inv->multiplyUL();
+	printf("Inverse = Inv(U) * Inv(L):\n");
+	inv->print();
+	printf("Multiply inverse by original matrix to check if it's identity:\n");
 	lu->multiply(m, inv);
 	lu->print();
 

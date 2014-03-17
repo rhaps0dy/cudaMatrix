@@ -165,10 +165,12 @@ void Matrix::multiply(Matrix *a, Matrix *b)
 
 	_matMultiply<<<dimGrid, dimBlock>>>(d, a->getD(), b->getD(), w);
 
+	setLU(false);
+
 	touch();
 }
 
-void Matrix::composeLU()
+void Matrix::multiplyLU()
 {
 	float *dcopy;
 	size_t size = w*w*sizeof(float);
@@ -179,7 +181,25 @@ void Matrix::composeLU()
 	CHECK_SUCCESS(cudaMalloc((void **)&dcopy, size));
 	CHECK_SUCCESS(cudaMemcpy(dcopy, d, size, cudaMemcpyDeviceToDevice));
 
-	_matComposeLU<<<dimGrid, dimBlock>>>(d, dcopy, w);
+	_matMultiplyLU<<<dimGrid, dimBlock>>>(d, dcopy, w);
+	cudaFree(dcopy);
+	setLU(false);
+	
+	touch();
+}
+
+void Matrix::multiplyUL()
+{
+	float *dcopy;
+	size_t size = w*w*sizeof(float);
+
+	dim3 dimGrid(1, 1);
+	dim3 dimBlock(w, w);
+
+	CHECK_SUCCESS(cudaMalloc((void **)&dcopy, size));
+	CHECK_SUCCESS(cudaMemcpy(dcopy, d, size, cudaMemcpyDeviceToDevice));
+
+	_matMultiplyUL<<<dimGrid, dimBlock>>>(d, dcopy, w);
 	cudaFree(dcopy);
 	setLU(false);
 	
@@ -204,11 +224,11 @@ bool Matrix::isDifferent(Matrix *m)
 
 void Matrix::invertLU()
 {
-	unsigned int i,y,x, min, width = w;
-	float *dest, *m = (float *) malloc(w*w*sizeof(float));
+	unsigned int i;
+	/*float *dest, *m = (float *) malloc(w*w*sizeof(float));
 	memcpy((void *)m, (const void *)h, w*w*sizeof(float));
 	dest = h;
-	/*CHECK_SUCCESS(cudaMalloc((void **)&m, w*w*sizeof(float)));
+	CHECK_SUCCESS(cudaMalloc((void **)&m, w*w*sizeof(float)));
 	for(i=0; i<w; i++)
 	{
 		min = (w-i < i+1 ? w-i : i+1);
@@ -220,41 +240,27 @@ void Matrix::invertLU()
 	CHECK_SUCCESS(cudaMemcpy(d, m, w*w*sizeof(float), cudaMemcpyDeviceToDevice));
 	copyDtoH();
 	cudaFree(m);*/
+
+	//hardcoded 3x3 matrix inversion
+	if(w != 3)
+		SPIT("You're supposed to use a 3x3 matrix only! Support for bigger matrices soon in https://github.com/rhaps0dy\n");
 	copyDtoH();
-	
-	for(i=0; i<w; i++)
-	{
-		min = (w-i < i+1 ? w-i : i+1);
-		for(unsigned int j=0; j<min; j++)
-		{
-			y = -j;
-			for(x=0; x<min; x++)
-			{
-				
+	//upper
 
-	if(y==0)
-	{
-		if(x==0)
-		{
-			printf("i = %u\n", i);
-			dest[i*width+i] = 1/m[i*width+i];
-		}
-		else {
-		dest[i*width+i+x] = m[i*width+i+x]*m[i*width+i];
-		}
-	}
+	h[2] = (((h[1]*h[5])/(h[4]*h[8]))-h[2]/h[8])/h[0];
+	for(i=0; i<3; i++)
+		h[i*w+i] = 1/h[i*w+i];
 
-	else if(x==0)
-	{
-		dest[(i+y)*width+i] = -(m[(i+y)*width+i]*m[i*width+i]);
-	}
-	else
-	dest[(i+y)*width+x+i] = m[(i+y)*width+x+i] + m[(i+y)*width+i] * m[i*width+i+x];
+	for(i=0; i<2; i++)
+		h[i*w+i+1] = -h[i*w+i+1]*h[i*w+i]*h[(i+1)*w+i+1];
 
 
-			}
-		}
-	}
+	//lower
+	for(i=0; i<2; i++)
+		h[(i+1)*w+i] = -h[(i+1)*w+i];
+	h[2*w] = h[1*w]*h[2*w+1] - h[2*w];
 	copyHtoD();
-	free(m);
+
+	
+//	free(m);
 }

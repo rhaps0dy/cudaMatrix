@@ -46,7 +46,10 @@ public:
 	void decomposeLU();
 
 	//! Rebuild the original matrix from an LU
-	void composeLU();
+	void multiplyLU();
+
+	//! Rebuild the inverse matrix from an inverse LU
+	void multiplyUL();
 
 	//! Multiply two matrices and store them in this one
 	void multiply(Matrix *a, Matrix *b);

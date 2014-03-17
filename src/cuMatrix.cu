@@ -77,24 +77,36 @@ __global__ void _matMultiply(float *dest, float *a, float *b, unsigned int width
 	for(i=1; i<width; i++)
 		dest[pos] += a[y*width+i]*b[i*width+x];
 }
-__global__ void _matComposeLU(float *dest, float *lu, unsigned int width)
+__global__ void _matMultiplyLU(float *dest, float *lu, unsigned int width)
 {
-	unsigned int i, maxi;
+	unsigned int i;
 	ESTABLISH_CURRENT_POSITION;
 
-	if(y>x)
-	{
-		maxi = x;
-		dest[pos] = lu[y*width+x]*lu[x*width+x];
-	}
-	else
-	{
-		maxi = y;
-		dest[pos] = lu[pos];
-	}
+	dest[pos] = _getLValue(lu, y, 0, width) * _getUValue(lu, 0, x, width);
+	for(i=1; i<width; i++)
+		dest[pos] += _getLValue(lu, y, i, width) * _getUValue(lu, i, x, width);
+}
 
-	for(i=0; i<maxi; i++)
-		dest[pos] += lu[y*width+i]*lu[i*width+x];
+__global__ void _matMultiplyUL(float *dest, float *lu, unsigned int width)
+{
+	unsigned int i;
+	ESTABLISH_CURRENT_POSITION;
+
+	dest[pos] = _getUValue(lu, y, 0, width) * _getLValue(lu, 0, x, width);
+	for(i=1; i<width; i++)
+		dest[pos] += _getUValue(lu, y, i, width) * _getLValue(lu, i, x, width);
+}
+
+__device__ float _getLValue(float *m, unsigned int y, unsigned int x, unsigned int width)
+{
+	if(y<x) return 0.0;
+	if(y==x) return 1.0;
+	return m[y*width+x];
+}
+__device__ float _getUValue(float *m, unsigned int y, unsigned int x, unsigned int width)
+{
+	if(y>x) return 0.0;
+	return m[y*width+x];
 }
 
 __global__ void _matDifferent(float *a, float *b, unsigned int width, const float tolerance, bool *result)
